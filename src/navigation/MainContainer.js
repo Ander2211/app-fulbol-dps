@@ -2,8 +2,8 @@ import * as React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
-// Import Screen Components
-import HomeScreen from '../screens/HomeScreen';
+// Import Navigation & Screens
+import StackNavigator from './StackNavigator';
 import PerfilScreen from '../screens/Perfil';
 import OtrosScreen from '../screens/Otros';
 
@@ -37,14 +37,30 @@ function MainContainer() {
                 tabBarInactiveTintColor: 'grey',
                 tabBarLabelStyle: { paddingBottom: 10, fontSize: 10 },
                 tabBarStyle: { padding: 10, height: 70 },
-                headerStyle: { backgroundColor: '#f4511e' },
-                headerTintColor: '#fff',
-                headerTitleStyle: { fontWeight: 'bold' },
+                headerShown: false, // Ocultamos el header del Tab para que el Stack tome el control
             })}
         >
-            <Tab.Screen name={homeName} component={HomeScreen} />
-            <Tab.Screen name={profileName} component={PerfilScreen} />
-            <Tab.Screen name={settingsName} component={OtrosScreen} />
+            <Tab.Screen name={homeName} component={StackNavigator} />
+            <Tab.Screen 
+                name={profileName} 
+                component={PerfilScreen} 
+                options={{ 
+                    headerShown: true,
+                    headerStyle: { backgroundColor: '#f4511e' },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: { fontWeight: 'bold' },
+                }} 
+            />
+            <Tab.Screen 
+                name={settingsName} 
+                component={OtrosScreen} 
+                options={{ 
+                    headerShown: true,
+                    headerStyle: { backgroundColor: '#f4511e' },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: { fontWeight: 'bold' },
+                }} 
+            />
         </Tab.Navigator>
     );
 }
