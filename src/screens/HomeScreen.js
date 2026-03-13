@@ -14,7 +14,6 @@ export default function HomeScreen({ navigation }) {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Consumo de la API de The SportsDB (Premier League)
   const fetchTeams = async () => {
     try {
       const response = await fetch('https://www.thesportsdb.com/api/v1/json/3/search_all_teams.php?l=English%20Premier%20League');
@@ -48,7 +47,11 @@ export default function HomeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} activeOpacity={0.7}>
+          <TouchableOpacity 
+            style={styles.card} 
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Details', { team: item })}
+          >
             <View style={styles.badgeContainer}>
               <Image source={{ uri: item.strBadge }} style={styles.badge} />
             </View>
@@ -73,7 +76,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA', // Fondo claro tipo app premium
+    backgroundColor: '#F5F7FA',
   },
   card: {
     flexDirection: 'row',
@@ -81,9 +84,9 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 10,
     marginHorizontal: 16,
-    borderRadius: 16, // Bordes más redondeados
-    elevation: 4, // Sombra para Android
-    shadowColor: '#000', // Sombra para iOS
+    borderRadius: 16,
+    elevation: 4, 
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
