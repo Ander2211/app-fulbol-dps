@@ -1,68 +1,82 @@
-import * as React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import * as React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 
 // Import Navigation & Screens
-import StackNavigator from './StackNavigator';
-import PerfilScreen from '../screens/Perfil';
-import OtrosScreen from '../screens/Otros';
+import StackNavigator from "./StackNavigator";
+import PerfilScreen from "../screens/Perfil";
+import OtrosScreen from "../screens/Otros";
+import ResultadosScreen from "../screens/ResultadosScreen";
 
 // Screen Names
 const homeName = "Inicio";
+const resultsName = "Resultados";
 const profileName = "Perfil";
 const settingsName = "Otros";
 
 const Tab = createBottomTabNavigator();
 
 function MainContainer() {
-    return (
-        <Tab.Navigator
-            initialRouteName={homeName}
-            screenOptions={({ route }) => ({
-                tabBarIcon: ({ focused, color, size }) => {
-                    let iconName;
-                    let rn = route.name;
+  return (
+    <Tab.Navigator
+      initialRouteName={homeName}
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          let rn = route.name;
 
-                    if (rn === homeName) {
-                        iconName = focused ? 'home' : 'home-outline';
-                    } else if (rn === profileName) {
-                        iconName = focused ? 'person' : 'person-outline';
-                    } else if (rn === settingsName) {
-                        iconName = focused ? 'settings' : 'settings-outline';
-                    }
+          if (rn === homeName) {
+            iconName = focused ? "home" : "home-outline";
+          } else if (rn === resultsName) {
+            iconName = focused ? "trophy" : "trophy-outline";
+          } else if (rn === profileName) {
+            iconName = focused ? "person" : "person-outline";
+          } else if (rn === settingsName) {
+            iconName = focused ? "settings" : "settings-outline";
+          }
 
-                    return <Ionicons name={iconName} size={size} color={color} />;
-                },
-                tabBarActiveTintColor: '#f4511e',
-                tabBarInactiveTintColor: 'grey',
-                tabBarLabelStyle: { paddingBottom: 10, fontSize: 10 },
-                tabBarStyle: { padding: 10, height: 70 },
-                headerShown: false, // Ocultamos el header del Tab para que el Stack tome el control
-            })}
-        >
-            <Tab.Screen name={homeName} component={StackNavigator} />
-            <Tab.Screen 
-                name={profileName} 
-                component={PerfilScreen} 
-                options={{ 
-                    headerShown: true,
-                    headerStyle: { backgroundColor: '#f4511e' },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: { fontWeight: 'bold' },
-                }} 
-            />
-            <Tab.Screen 
-                name={settingsName} 
-                component={OtrosScreen} 
-                options={{ 
-                    headerShown: true,
-                    headerStyle: { backgroundColor: '#f4511e' },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: { fontWeight: 'bold' },
-                }} 
-            />
-        </Tab.Navigator>
-    );
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "#f4511e",
+        tabBarInactiveTintColor: "grey",
+        tabBarLabelStyle: { paddingBottom: 10, fontSize: 10 },
+        tabBarStyle: { padding: 10, height: 70 },
+        headerShown: false, // Ocultamos el header del Tab para que el Stack tome el control
+      })}
+    >
+      <Tab.Screen name={homeName} component={StackNavigator} />
+      <Tab.Screen
+        name={resultsName}
+        component={ResultadosScreen}
+        options={{
+          headerShown: true,
+          headerStyle: { backgroundColor: "#f4511e" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+      <Tab.Screen
+        name={profileName}
+        component={PerfilScreen}
+        options={{
+          headerShown: true,
+          headerStyle: { backgroundColor: "#f4511e" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+      <Tab.Screen
+        name={settingsName}
+        component={OtrosScreen}
+        options={{
+          headerShown: true,
+          headerStyle: { backgroundColor: "#f4511e" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+    </Tab.Navigator>
+  );
 }
 
 export default MainContainer;
