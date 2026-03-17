@@ -5,14 +5,14 @@ import { Ionicons } from "@expo/vector-icons";
 // Import Navigation & Screens
 import StackNavigator from "./StackNavigator";
 import PerfilScreen from "../screens/Perfil";
-import OtrosScreen from "../screens/Otros";
+import CalendarioScreen from "../screens/CalendarioScreen";
 import ResultadosScreen from "../screens/ResultadosScreen";
 
 // Screen Names
 const homeName = "Inicio";
 const resultsName = "Resultados";
 const profileName = "Perfil";
-const settingsName = "Otros";
+const calendarName = "Calendario";
 
 const Tab = createBottomTabNavigator();
 
@@ -31,8 +31,8 @@ function MainContainer() {
             iconName = focused ? "trophy" : "trophy-outline";
           } else if (rn === profileName) {
             iconName = focused ? "person" : "person-outline";
-          } else if (rn === settingsName) {
-            iconName = focused ? "settings" : "settings-outline";
+          } else if (rn === calendarName) {
+            iconName = focused ? "calendar" : "calendar-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -66,8 +66,8 @@ function MainContainer() {
         }}
       />
       <Tab.Screen
-        name={settingsName}
-        component={OtrosScreen}
+        name={calendarName}
+        component={CalendarioScreen}
         options={{
           headerShown: true,
           headerStyle: { backgroundColor: "#f4511e" },
