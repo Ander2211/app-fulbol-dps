@@ -16,7 +16,7 @@ const calendarName = "Calendario";
 
 const Tab = createBottomTabNavigator();
 
-function MainContainer() {
+function MainContainer({ onLogout }) {
   return (
     <Tab.Navigator
       initialRouteName={homeName}
@@ -57,14 +57,15 @@ function MainContainer() {
       />
       <Tab.Screen
         name={profileName}
-        component={PerfilScreen}
         options={{
           headerShown: true,
           headerStyle: { backgroundColor: "#f4511e" },
           headerTintColor: "#fff",
           headerTitleStyle: { fontWeight: "bold" },
         }}
-      />
+      >
+        {() => <PerfilScreen onLogout={onLogout} />}
+      </Tab.Screen>
       <Tab.Screen
         name={calendarName}
         component={CalendarioScreen}

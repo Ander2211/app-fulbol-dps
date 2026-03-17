@@ -29,7 +29,7 @@ const LEAGUES = [
   { id: "4380", name: "NHL", sport: "Hockey" },
 ];
 
-export default function PerfilScreen() {
+export default function PerfilScreen({ onLogout }) {
   const [favorites, setFavorites] = useState(getFavorites());
   const [showSuggested, setShowSuggested] = useState(false);
   const [availableTeams, setAvailableTeams] = useState([]);
@@ -129,6 +129,9 @@ export default function PerfilScreen() {
         </View>
         <Text style={styles.userName}>Ander (DPS)</Text>
         <Text style={styles.userEmail}>ander.dps@email.com</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={() => onLogout?.()}>
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.statsRow}>
@@ -338,6 +341,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  logoutBtn: {
+    marginTop: 12,
+    backgroundColor: "#f4511e",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  logoutText: {
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
   },
   toggleText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
 });
