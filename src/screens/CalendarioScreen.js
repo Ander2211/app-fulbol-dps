@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -49,9 +48,6 @@ export default function CalendarioScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState('Todas');
   const { colors, dark } = useTheme();
-  const { width } = useWindowDimensions();
-  const isCompactFilter = width <= 700;
-  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -100,9 +96,9 @@ export default function CalendarioScreen() {
     loadingText: { marginTop: 10, color: colors.primary, fontWeight: 'bold' },
     filtersWrapper: {
       backgroundColor: colors.card,
+      height: 56,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
-      paddingVertical: 10,
     },
     filterBtn: {
       height: 34,
@@ -111,34 +107,10 @@ export default function CalendarioScreen() {
       backgroundColor: dark ? "#333" : "#f0f0f0",
       justifyContent: "center",
       alignItems: "center",
-      marginRight: 10,
-      marginBottom: 10,
     },
     filterActive: { backgroundColor: colors.primary },
     filterText: { fontSize: 13, fontWeight: "600", color: colors.secondary },
     filterTextActive: { color: "#fff" },
-    filterToggle: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      backgroundColor: dark ? "#222" : "#f5f5f5",
-      borderRadius: 16,
-      paddingVertical: 10,
-      paddingHorizontal: 14,
-      marginHorizontal: 15,
-      marginBottom: 0,
-    },
-    filterToggleText: {
-      fontSize: 14,
-      fontWeight: "700",
-      color: colors.text,
-    },
-    filterOptions: {
-      paddingHorizontal: 15,
-      paddingTop: 10,
-      flexDirection: "row",
-      flexWrap: "wrap",
-    },
     leagueTitle: {
       fontWeight: 'bold',
       color: colors.secondary,
@@ -203,54 +175,23 @@ export default function CalendarioScreen() {
     <SafeAreaView style={dynamicStyles.container}>
       {/* Filtros por deporte */}
       <View style={dynamicStyles.filtersWrapper}>
-        {isCompactFilter ? (
-          <>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContent}
+        >
+          {SPORTS.map((sport) => (
             <TouchableOpacity
-              style={dynamicStyles.filterToggle}
-              onPress={() => setFilterOpen((prev) => !prev)}
+              key={sport}
+              style={[dynamicStyles.filterBtn, selectedSport === sport && dynamicStyles.filterActive]}
+              onPress={() => setSelectedSport(sport)}
             >
-              <Text style={dynamicStyles.filterToggleText}>
-                {selectedSport !== 'Todas'
-                  ? selectedSport
-                  : filterOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+              <Text style={[dynamicStyles.filterText, selectedSport === sport && dynamicStyles.filterTextActive]}>
+                {sport}
               </Text>
-              <Text style={dynamicStyles.filterToggleText}>{filterOpen ? '−' : '+'}</Text>
             </TouchableOpacity>
-            {filterOpen && (
-              <View style={dynamicStyles.filterOptions}>
-                {SPORTS.map((sport) => (
-                  <TouchableOpacity
-                    key={sport}
-                    style={[dynamicStyles.filterBtn, selectedSport === sport && dynamicStyles.filterActive]}
-                    onPress={() => { setSelectedSport(sport); setFilterOpen(false); }}
-                  >
-                    <Text style={[dynamicStyles.filterText, selectedSport === sport && dynamicStyles.filterTextActive]}>
-                      {sport}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filtersContent}
-          >
-            {SPORTS.map((sport) => (
-              <TouchableOpacity
-                key={sport}
-                style={[dynamicStyles.filterBtn, selectedSport === sport && dynamicStyles.filterActive]}
-                onPress={() => setSelectedSport(sport)}
-              >
-                <Text style={[dynamicStyles.filterText, selectedSport === sport && dynamicStyles.filterTextActive]}>
-                  {sport}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+          ))}
+        </ScrollView>
       </View>
 
       {Object.keys(grouped).length > 0 ? (

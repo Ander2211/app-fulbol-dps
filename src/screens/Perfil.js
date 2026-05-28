@@ -20,6 +20,7 @@ import {
 } from "../services/favoritesStore";
 import { getTeamBadge } from "../services/sportsApi";
 import { useTheme } from "../context/ThemeContext";
+import { supabase } from "../services/supabase";
 
 const BASE_URL = "https://www.thesportsdb.com/api/v1/json/3";
 
@@ -42,18 +43,115 @@ export default function PerfilScreen({ onLogout }) {
   const [badges, setBadges] = useState({});
   const [availableBadges, setAvailableBadges] = useState({});
   const [profileImage, setProfileImage] = useState(null);
+  const [userData, setUserData] = useState({
+    username: "Cargando...",
+    email: "Cargando...",
+  });
 
   useEffect(() => {
-    const loadProfileImage = async () => {
+    const loadProfileData = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from("users")
+            .select("username, email, foto_perfil")
+            .eq("id", user.id)
+            .single();
+
+          if (error) {
+            console.log("Error al traer perfil desde la BD:", error.message);
+            setUserData({
+              username:
+                user.user_metadata?.username || user.email.split("@")[0],
+              email: user.email,
+            });
+          } else if (data) {
+            setUserData({
+              username:
+                data.username ||
+                user.user_metadata?.username ||
+                user.email.split("@")[0],
+              email: data.email || user.email,
+            });
+            if (data.foto_perfil) {
+              setProfileImage(data.foto_perfil);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.log("Error al cargar datos de perfil de Supabase:", err);
+      }
+
       try {
         const savedImage = await AsyncStorage.getItem("profile_image");
         if (savedImage) setProfileImage(savedImage);
       } catch (err) {
-        console.log("Error loading profile image:", err);
+        console.log("Error al cargar imagen local de perfil:", err);
       }
     };
-    loadProfileImage();
+
+    loadProfileData();
   }, []);
+
+  // ============================================================
+  // FUNCIÓN: uploadImageToSupabase
+  // Sube la imagen al bucket "avatars" en Supabase Storage
+  // y guarda la URL pública en la columna foto_perfil de la tabla users
+  // ============================================================
+  const uploadImageToSupabase = async (uri) => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Convertir la URI de la imagen a un blob para subirla
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      // Nombre del archivo: usamos el ID del usuario para que siempre se sobreescriba
+      const fileExt = uri.split(".").pop()?.split("?")[0] || "jpg";
+      const filePath = `${user.id}.${fileExt}`;
+
+      // Subir al bucket "avatars" en Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, blob, {
+          contentType: `image/${fileExt}`,
+          upsert: true, // Sobreescribe si ya existe
+        });
+
+      if (uploadError) {
+        console.log("Error al subir imagen:", uploadError.message);
+        return;
+      }
+
+      // Obtener la URL pública de la imagen subida
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl;
+
+      // Guardar la URL en la columna foto_perfil de la tabla users
+      const { error: dbError } = await supabase
+        .from("users")
+        .update({ foto_perfil: publicUrl })
+        .eq("id", user.id);
+
+      if (dbError) {
+        console.log("Error al guardar URL en BD:", dbError.message);
+      }
+
+      return publicUrl;
+    } catch (err) {
+      console.log("Error en uploadImageToSupabase:", err);
+    }
+  };
 
   const handlePickImage = async () => {
     if (Platform.OS === "web") {
@@ -80,7 +178,7 @@ export default function PerfilScreen({ onLogout }) {
         },
         { text: "Cancelar", style: "cancel" },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -89,7 +187,7 @@ export default function PerfilScreen({ onLogout }) {
     if (status !== "granted") {
       Alert.alert(
         "Permiso denegado",
-        "Lo sentimos, necesitamos permisos de cámara para hacer esto."
+        "Lo sentimos, necesitamos permisos de cámara para hacer esto.",
       );
       return;
     }
@@ -103,7 +201,11 @@ export default function PerfilScreen({ onLogout }) {
     if (!result.canceled) {
       const uri = result.assets[0].uri;
       setProfileImage(uri);
-      await AsyncStorage.setItem("profile_image", uri);
+      // Subir a Supabase Storage y guardar URL en la BD
+      const publicUrl = await uploadImageToSupabase(uri);
+      if (publicUrl) {
+        setProfileImage(publicUrl);
+      }
     }
   };
 
@@ -112,7 +214,7 @@ export default function PerfilScreen({ onLogout }) {
     if (status !== "granted") {
       Alert.alert(
         "Permiso denegado",
-        "Lo sentimos, necesitamos permisos de galería para hacer esto."
+        "Lo sentimos, necesitamos permisos de galería para hacer esto.",
       );
       return;
     }
@@ -126,11 +228,29 @@ export default function PerfilScreen({ onLogout }) {
     if (!result.canceled) {
       const uri = result.assets[0].uri;
       setProfileImage(uri);
-      await AsyncStorage.setItem("profile_image", uri);
+      // Subir a Supabase Storage y guardar URL en la BD
+      const publicUrl = await uploadImageToSupabase(uri);
+      if (publicUrl) {
+        setProfileImage(publicUrl);
+      }
     }
   };
 
   const removePhoto = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        // Limpiar la URL de la BD
+        await supabase
+          .from("users")
+          .update({ foto_perfil: null })
+          .eq("id", user.id);
+      }
+    } catch (err) {
+      console.log("Error al eliminar foto:", err);
+    }
     setProfileImage(null);
     await AsyncStorage.removeItem("profile_image");
   };
@@ -313,10 +433,16 @@ export default function PerfilScreen({ onLogout }) {
   return (
     <ScrollView style={dynamicStyles.container}>
       <View style={dynamicStyles.profileSection}>
-        <TouchableOpacity style={styles.avatarContainer} onPress={handlePickImage}>
+        <TouchableOpacity
+          style={styles.avatarContainer}
+          onPress={handlePickImage}
+        >
           <View style={dynamicStyles.avatar}>
             {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.profileImage} />
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profileImage}
+              />
             ) : (
               <Text style={styles.avatarText}>👤</Text>
             )}
@@ -325,9 +451,12 @@ export default function PerfilScreen({ onLogout }) {
             <Text style={styles.cameraIcon}>📷</Text>
           </View>
         </TouchableOpacity>
-        <Text style={dynamicStyles.userName}>Ander (DPS)</Text>
-        <Text style={dynamicStyles.userEmail}>ander.dps@email.com</Text>
-        <TouchableOpacity style={dynamicStyles.logoutBtn} onPress={() => onLogout?.()}>
+        <Text style={dynamicStyles.userName}>{userData.username}</Text>
+        <Text style={dynamicStyles.userEmail}>{userData.email}</Text>
+        <TouchableOpacity
+          style={dynamicStyles.logoutBtn}
+          onPress={() => onLogout?.()}
+        >
           <Text style={styles.logoutText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </View>

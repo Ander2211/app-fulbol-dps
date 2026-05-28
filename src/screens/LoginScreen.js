@@ -28,12 +28,8 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
-import * as SecureStore from 'expo-secure-store'; // Para guardar el token de forma segura
 import { supabase } from '../services/supabase';  // Cliente de Supabase
 import SplashScreen from './SplashScreen';
-
-// Clave con la que se guarda el token en SecureStore
-const SESSION_KEY = 'supabase_session';
 
 export default function LoginScreen({ onLoginSuccess }) {
   const [showSplash, setShowSplash] = useState(false);
@@ -58,20 +54,7 @@ export default function LoginScreen({ onLoginSuccess }) {
     }
   }, [showSplash]);
 
-  // ============================================================
-  // FUNCIÓN: saveSession
-  // Guarda el token JWT de Supabase en expo-secure-store
-  // Esto permite que la sesión persista aunque se cierre la app
-  // El token es un dato sensible, por eso se usa SecureStore
-  // y NO AsyncStorage (que no está cifrado)
-  // ============================================================
-  const saveSession = async (session) => {
-    try {
-      await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session));
-    } catch (e) {
-      console.warn('No se pudo guardar la sesión en SecureStore:', e);
-    }
-  };
+
 
   // ============================================================
   // FUNCIÓN: handleLogin
@@ -101,12 +84,8 @@ export default function LoginScreen({ onLoginSuccess }) {
         return;
       }
 
-      // Si el login fue exitoso, guardamos el token en SecureStore
-      if (data.session) {
-        await saveSession(data.session);
-      }
-
-      onLoginSuccess?.(); // Redirige a la app principal
+      // Redirige a la app principal (Supabase maneja la sesión automáticamente)
+      onLoginSuccess?.();
     } catch (e) {
       setError('Error de conexión. Verifica tu internet.');
     } finally {
@@ -167,7 +146,6 @@ export default function LoginScreen({ onLoginSuccess }) {
 
       // Si no requiere confirmación de correo, inicia sesión directo
       if (data.session) {
-        await saveSession(data.session);
         onLoginSuccess?.();
       } else {
         // Si requiere confirmación, muestra mensaje y vuelve al login
