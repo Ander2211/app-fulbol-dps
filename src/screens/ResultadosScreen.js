@@ -46,7 +46,7 @@ export default function ResultadosScreen() {
   const [filterOpen, setFilterOpen] = useState(false);
   const { colors, dark } = useTheme();
   const { width } = useWindowDimensions();
-  const isCompactFilter = width <= 360;
+  const isCompactFilter = width <= 700;
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -272,7 +272,9 @@ export default function ResultadosScreen() {
               onPress={() => setFilterOpen((prev) => !prev)}
             >
               <Text style={dynamicStyles.filterToggleText}>
-                {selectedSport !== "Todos" ? `Deporte: ${selectedSport}` : "Filtrar por deporte"}
+                {selectedSport !== "Todos"
+                  ? selectedSport
+                  : filterOpen ? "Ocultar filtros" : "Mostrar filtros"}
               </Text>
               <Text style={dynamicStyles.filterToggleText}>{filterOpen ? "−" : "+"}</Text>
             </TouchableOpacity>
